@@ -257,6 +257,30 @@ describe('Parse LiveQuery', () => {
     await object.save();
   });
 
+  it('can subscribe to query with watch', async () => {
+    const object = new TestObject();
+    await object.save({ name: 'hello', age: 21 });
+
+    const query = new Parse.Query(TestObject);
+    query.equalTo('objectId', object.id);
+    query.watch('age');
+    const subscription = await query.subscribe();
+
+    const updateSpy = {
+      update(object, original) {
+        expect(object.get('age')).not.toEqual(original.get('age'));
+      },
+    };
+    const spy = spyOn(updateSpy, 'update').and.callThrough();
+    subscription.on('update', updateSpy.update);
+    object.set({ foo: 'bar' });
+    await object.save();
+    object.set({ age: 22 });
+    await object.save();
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
   it('live query can handle beforeConnect and beforeSubscribe errors', async () => {
     await reconfigureServer({
       cloud({ Cloud }) {

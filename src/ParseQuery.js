@@ -234,6 +234,7 @@ class ParseQuery {
   _include: Array<string>;
   _exclude: Array<string>;
   _select: Array<string>;
+  _watch: Array<string>;
   _limit: number;
   _skip: number;
   _count: boolean;
@@ -442,6 +443,9 @@ class ParseQuery {
     if (this._select) {
       params.keys = this._select.join(',');
     }
+    if (this._watch) {
+      params.watch = this._watch.join(',');
+    }
     if (this._count) {
       params.count = 1;
     }
@@ -508,6 +512,10 @@ class ParseQuery {
 
     if (json.keys) {
       this._select = json.keys.split(',');
+    }
+
+    if (json.watch) {
+      this._watch = json.watch.split(',');
     }
 
     if (json.excludeKeys) {
@@ -1911,6 +1919,26 @@ class ParseQuery {
         this._select = this._select.concat(key);
       } else {
         this._select.push(key);
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Triggers LiveQuery event only if these keys have been updated
+   *
+   * @param {...string|Array<string>} keys The name(s) of the key(s) to include.
+   * @returns {Parse.Query} Returns the query, so you can chain this call.
+   */
+  watch(...keys: Array<string | Array<string>>): ParseQuery {
+    if (!this._watch) {
+      this._watch = [];
+    }
+    keys.forEach(key => {
+      if (Array.isArray(key)) {
+        this._watch = this._watch.concat(key);
+      } else {
+        this._watch.push(key);
       }
     });
     return this;

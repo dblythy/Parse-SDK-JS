@@ -201,6 +201,7 @@ class LiveQueryClient extends EventEmitter {
     const queryJSON = query.toJSON();
     const where = queryJSON.where;
     const fields = queryJSON.keys ? queryJSON.keys.split(',') : undefined;
+    const watch = queryJSON.watch ? queryJSON.watch.split(',') : undefined;
     const subscribeRequest = {
       op: OP_TYPES.SUBSCRIBE,
       requestId: this.requestId,
@@ -208,6 +209,7 @@ class LiveQueryClient extends EventEmitter {
         className,
         where,
         fields,
+        watch,
       },
     };
 
@@ -291,6 +293,7 @@ class LiveQueryClient extends EventEmitter {
       const queryJSON = query.toJSON();
       const where = queryJSON.where;
       const fields = queryJSON.keys ? queryJSON.keys.split(',') : undefined;
+      const watch = queryJSON.watch ? queryJSON.watch.split(',') : undefined;
       const className = query.className;
       const sessionToken = subscription.sessionToken;
       const subscribeRequest = {
@@ -300,6 +303,7 @@ class LiveQueryClient extends EventEmitter {
           className,
           where,
           fields,
+          watch,
         },
       };
 
