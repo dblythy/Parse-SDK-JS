@@ -1761,17 +1761,11 @@ describe('Parse Query', () => {
       });
   });
 
-  it('supports objects with length', async done => {
+  it('supports objects with length', async () => {
     const obj = new TestObject();
     obj.set('length', 5);
     assert.equal(obj.get('length'), 5);
-    try {
-      await obj.save();
-      done.fail();
-    } catch (e) {
-      assert.strictEqual(e.message, 'Invalid field name: length.');
-      done();
-    }
+    await expectAsync(obj.save()).toBeRejectedWithError('Invalid field name: length.');
   });
 
   it('can include User fields', async () => {
@@ -2365,7 +2359,15 @@ describe('Parse Query', () => {
     query.hint('_id_');
     query.explain();
     const explain = await query.find();
-    assert.equal(explain.queryPlanner.winningPlan.inputStage.inputStage.indexName, '_id_');
+    let indexName = '';
+    // https://www.mongodb.com/docs/manual/reference/explain-results/#std-label-queryPlanner
+    const plan = explain.queryPlanner.winningPlan;
+    if (plan.inputStage) {
+      indexName = plan.inputStage.inputStage.indexName;
+    } else {
+      indexName = plan.queryPlan.inputStage.inputStage.indexName;
+    }
+    assert.equal(indexName, '_id_');
   });
 
   it('can query with select on null field', async () => {
